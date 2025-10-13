@@ -1,9 +1,12 @@
 package edu.hsutx;
-
+import java.util.Deque;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 
 public class WeightedDirectedGraph {
-    // TODO - Implement storage of the graph, including either adjacency list, adjacency matrix, or both.
+    //Adjacency list - list 0 = vertex 1, etc
+    List<Edge> [] vertices;
 
     /***
      *
@@ -11,8 +14,17 @@ public class WeightedDirectedGraph {
      * @param edgeList: an List of Edges containing start and end vertex # and weight.
      ***/
     public WeightedDirectedGraph(int vertexQuantity, List<Edge> edgeList) {
-        // TODO - Implement
-
+        //Leave vertices[0] as empty and unused, so that when accessing the graph the vertex number matches the index of vertices
+        vertices = new ArrayList [vertexQuantity+1];
+        for (Edge e : edgeList) {
+            if (vertices[e.getStart()]== null) {
+                vertices[e.getStart()] = new ArrayList<Edge>();
+                vertices[e.getStart()].add(e);
+            }
+            else if (!vertices[e.getStart()].contains(e)) {
+                vertices[e.getStart()].add(e);
+            }
+        }
     }
 
     /***
@@ -20,18 +32,28 @@ public class WeightedDirectedGraph {
      * @param start
      * @param end
      */
-    public static boolean isAdjacent(int start, int end) {
-        // TODO - Implement
-        return true;
+    public boolean isAdjacent(int start, int end) {
+        for (Edge e : vertices[start]) {
+            if (e.getEnd() == end) return true;
+        }
+        return false;
     }
 
     /***
      * returns a 2d matrix of adjacency weights, with 0 values for non-adjacent vertices.
      * @return matrix of doubles representing adjacent edge weights
      */
-    public static double[][] adjacencyMatrix() {
-        // TODO - Implement
-        return null;
+    public double[][] adjacencyMatrix() {
+        double [][] adjacencyMatrix = new double[vertices.length][vertices.length];
+        for (int i = 0; i < vertices.length; i++) {
+            for (int j=0; j<vertices.length;j++) {
+                adjacencyMatrix[i][j] = 0.0;
+            }
+            if (vertices[i] != null) {
+                for (Edge e : vertices[i]) adjacencyMatrix[e.getStart()][e.getEnd()] = e.getWeight();
+            }
+        }
+        return adjacencyMatrix;
     }
 
     /***
@@ -41,8 +63,35 @@ public class WeightedDirectedGraph {
      * @param end
      * @return an array of integers containing the path of vertices to be traveled, including start and end.
      */
-    public static int[] getBFSPath(int start, int end) {
+    public int[] getBFSPath(int start, int end) {
         // TODO - Implement
+        Deque<Edge> q = new ArrayDeque<>();
+        boolean [] visited = new boolean [vertices.length+1];
+        int [] parent = new int [vertices.length+1];
+        q.addAll(vertices[start]);
+        visited[start] = true;
+        parent[start] = -1;
+        while (!q.isEmpty()) {
+            Edge e = q.pollFirst();
+            if (!visited[e.getEnd()]) {
+                if (e.getEnd() == end) {
+                    int [] path = new int[vertices.length];
+                    path[0]=e.getEnd();
+                    int j = e.getEnd();
+                    int i = 1;
+                    while (parent[j]!=-1) {
+                        path[i] = parent[j];
+                        j = parent[j];
+                        i++;
+                    }
+                    return path;
+                }
+                q.addAll(vertices[e.getEnd()]);
+                visited[e.getEnd()] = true;
+                parent[e.getEnd()] = e.getStart();
+            }
+        }
+
         return null;
     }
 
