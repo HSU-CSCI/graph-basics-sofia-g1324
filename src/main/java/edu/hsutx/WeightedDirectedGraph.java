@@ -1,8 +1,6 @@
 package edu.hsutx;
-import java.util.Deque;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.Collections;
 
 public class WeightedDirectedGraph {
     //Adjacency list - list 0 = vertex 1, etc
@@ -64,25 +62,28 @@ public class WeightedDirectedGraph {
      * @return an array of integers containing the path of vertices to be traveled, including start and end.
      */
     public int[] getBFSPath(int start, int end) {
-        // TODO - Implement
-        Deque<Edge> q = new ArrayDeque<>();
+        Deque<Edge> q = new ArrayDeque<>(vertices[start]);
         boolean [] visited = new boolean [vertices.length+1];
         int [] parent = new int [vertices.length+1];
-        q.addAll(vertices[start]);
         visited[start] = true;
         parent[start] = -1;
         while (!q.isEmpty()) {
             Edge e = q.pollFirst();
             if (!visited[e.getEnd()]) {
                 if (e.getEnd() == end) {
-                    int [] path = new int[vertices.length];
-                    path[0]=e.getEnd();
+                    //use ArrayList to add each parent to the beginning and resize?
+                    parent[e.getEnd()] = e.getStart();
+                    List<Integer> backPath = new ArrayList<>();
+                    backPath.add(e.getEnd());
                     int j = e.getEnd();
-                    int i = 1;
                     while (parent[j]!=-1) {
-                        path[i] = parent[j];
+                        backPath.add(parent[j]);
                         j = parent[j];
-                        i++;
+                    }
+                    Collections.reverse(backPath);
+                    int [] path =  new int[backPath.size()];
+                    for (int i = 0; i < backPath.size(); i++) {
+                        path[i] = backPath.get(i);
                     }
                     return path;
                 }
@@ -102,8 +103,40 @@ public class WeightedDirectedGraph {
      * @param end
      * @return an array of integers containing the path of vertices to be traveled, including start and end.
      */
-    public static int[] getDFSPath(int start, int end) {
-        // TODO - Implement
+    public int[] getDFSPath(int start, int end) {
+        Deque<Edge> q = new ArrayDeque<>();
+        boolean [] visited = new boolean [vertices.length+1];
+        int [] parent = new int [vertices.length+1];
+        visited[start] = true;
+        parent[start] = -1;
+        for (int i = 0; i<vertices[start].size(); i++) q.addFirst(vertices[start].get(i));
+        while (!q.isEmpty()) {
+            Edge e = q.pollFirst();
+            if (!visited[e.getEnd()]) {
+                if (e.getEnd() == end) {
+                    //use ArrayList to add each parent to the beginning and resize?
+                    parent[e.getEnd()] = e.getStart();
+                    List<Integer> backPath = new ArrayList<>();
+                    backPath.add(e.getEnd());
+                    int j = e.getEnd();
+                    while (parent[j]!=-1) {
+                        backPath.add(parent[j]);
+                        j = parent[j];
+                    }
+                    Collections.reverse(backPath);
+                    int [] path =  new int[backPath.size()];
+                    for (int i = 0; i < backPath.size(); i++) {
+                        path[i] = backPath.get(i);
+                    }
+                    return path;
+                }
+                visited[e.getEnd()] = true;
+                for (int i = 0; i<vertices[e.getEnd()].size(); i++) {
+                    if (!visited[vertices[e.getEnd()].get(i).getEnd()]) q.addFirst(vertices[e.getEnd()].get(i));
+                }
+                parent[e.getEnd()] = e.getStart();
+            }
+        }
         return null;
     }
 
